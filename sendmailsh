@@ -1,5 +1,47 @@
 #!/bin/bash
 
+###############################################################################
+# Bash Email Sending Script
+# 
+# Description:
+#   This script sends emails via either:
+#     - A local MTA (e.g., sendmail)
+#     - Manual SMTP communication using nc (netcat)
+# 
+#   It supports both external SMTP servers and local servers, offering a 
+#   flexible solution for environments with limited internet connectivity or 
+#   strict security requirements.
+#
+# Features:
+#   - Modular design with reusable functions
+#   - Case statement to handle multiple commands (sendmail, smtp, help)
+#   - Dynamic argument parsing for sender, recipient, and email details
+#   - Fallback support: uses sendmail if available, otherwise manual SMTP
+#   - Detailed help with examples
+#
+# Usage:
+#   ./mail_script.sh <command> [arguments]
+# 
+# Commands:
+#   sendmail   - Send email using sendmail (local MTA)
+#   smtp       - Send email via manual SMTP communication
+#   help       - Show detailed help and examples
+#
+# Arguments:
+#   SMTP_SERVER   The SMTP server address (e.g., smtp.example.com or localhost)
+#   SMTP_PORT     The SMTP server port (default is 25 for local, 587 for external)
+#   FROM_EMAIL    The sender's email address (e.g., sender@example.com)
+#   TO_EMAIL      The recipient's email address (e.g., recipient@example.com)
+#   TEXT_FILE     Path to the text file containing the email body
+#   SUBJECT       (Optional) Subject of the email. Defaults to 'Email from Bash Script'
+# 
+# Examples:
+#   ./mail_script.sh sendmail localhost 25 sender@example.com recipient@example.com email_body.txt 'Test Email'
+#   ./mail_script.sh smtp smtp.example.com 587 sender@example.com recipient@example.com email_body.txt
+#   ./mail_script.sh help
+#
+###############################################################################
+
 # Help function
 function show_help() {
     echo "Usage: $0 <command> [arguments]"
