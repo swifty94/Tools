@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# Disk Usage Analysis Script
+#
+# How to Use the Script
+#
+# Save this script to a file, for example: disk_analysis.sh.
+#
+# Make it executable:
+#
+#       chmod +x disk_analysis
+#
+# Run the script with:
+#
+#       sudo ./disk_analysis [target_directory]
+#
+# Replace [target_directory] with the directory you want to analyze (default is /).#
+#
+# Example of handy usage:
+#
+# [srvr1:~]# sudo vim /bin/disk_analysis
+# [srvr1:~]# sudo chmod +x /bin/disk_analysis
+# [srvr1:~]# source ~/.bashrc
+# [srvr1:~]# disk_analysis
+#
+# Works on Ubuntu, AlmaLinux, CentOS, Debian, and similar distributions
+#
+#
+
+print_header() {
+    echo "==========================="
+    echo " $1"
+    echo "==========================="
+}
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run this script as root or with sudo."
+    exit 1
+fi
+
+TARGET_DIR="${1:-/}"
+print_header "Disk Usage Analysis for $TARGET_DIR"
+
+print_header "Total Disk Usage"
+df -hT "$TARGET_DIR"
+
+print_header "Top 10 Largest Directories"
+du -ah --max-depth=1 "$TARGET_DIR" 2>/dev/null | sort -rh | head -n 10
+
+print_header "Top 10 Largest Files"
+find "$TARGET_DIR" -type f -exec du -ah {} + 2>/dev/null | sort -rh | head -n 10
+
+print_header "Disk Usage by File Type"
+find "$TARGET_DIR" -type f 2>/dev/null | sed -n 's/.*\.//p' | sort | uniq -c | sort -nr | head -n 10
+
+print_header "Mounted Filesystem Disk Usage"
+df -h | grep -vE '^Filesystem|tmpfs|cdrom'
+
+if [ -d "$TARGET_DIR/var/log" ]; then
+    print_header "Top 10 Log Files in /var/log"
+    du -ah /var/log 2>/dev/null | sort -rh | head -n 10
+fi
+
+echo
+echo "Analysis Complete. Review the above results."
+
