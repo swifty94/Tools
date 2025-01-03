@@ -156,3 +156,140 @@ top -bn 1 | head | grep "%Cpu(s)" | awk '{print $1 " " $2}'
 ```
 
 ---
+
+# Database Operations Notes
+
+## Oracle Database Operations
+
+### Check Applied Changesets
+Retrieve the IDs of the applied changesets:
+```sql
+SELECT id FROM ftacs.databasechangelog;
+```
+
+### Connection Strings
+Examples of Oracle SQL Plus connection strings:
+```bash
+sqlplus user/password@host:port/service
+```
+
+#### Examples:
+```bash
+sqlplus ftacs/ftacs@10.0.0.1:1521/TR069DB_SRV_TR069DB_01
+sqlplus ftacs/ftacs@pv10150:1521/ORADIGI
+sqlplus ftacs/UTdoPfw26S5e0Q4@ftacsdb01:1521/ftacs
+```
+
+### Backup and Restore with SCN
+#### Backup Using SCN
+1. Create a backup directory:
+   ```sql
+   CREATE OR REPLACE DIRECTORY backup AS '/mnt/backup';
+   ```
+
+2. Grant permissions:
+   ```sql
+   GRANT READ, WRITE ON DIRECTORY backup TO ftacs;
+   ```
+
+3. Retrieve the current SCN:
+   ```sql
+   SELECT CURRENT_SCN FROM v$database;
+   ```
+
+4. Perform the export:
+   ```bash
+   nohup expdp ftacs/ftacs directory=FTDPS dumpfile=friendly_schemas_%U.dmp \
+   logfile=friendly_schemas.log schemas=ADMIN,CSR,FTACS exclude=statistics \
+   parallel=4 FLASHBACK_SCN=$(SCN from step 2) &
+   ```
+
+#### Restore Backup
+Import the backup file:
+```bash
+nohup impdp ftacs/ftacs DUMPFILE=friendly_schemas_%U.dmp schemas=ADMIN,CSR,FTACS parallel=4 &
+```
+
+---
+
+## MySQL Database Operations
+
+### Connection and Permissions
+#### Grant All Privileges
+Grant privileges to a user on a specific host:
+```sql
+GRANT ALL ON *.* TO 'ftacs'@'10.0.0.2' IDENTIFIED BY 'ftacs';
+FLUSH PRIVILEGES;
+```
+
+### Backup and Restore
+#### Create a Backup
+```bash
+mysqldump -u ftacs -p'ftacs' -h 10.0.0.3 --single-transaction --triggers --routines --events \
+--databases ftacs admin csr > /path/to/backup.sql
+```
+
+#### Restore a Backup
+```bash
+mysql -u root -p < /path/to/backup.sql
+```
+
+---
+
+## Common Queries
+
+### Top Oracle Tables by Size
+Retrieve the top 10 largest tables:
+```sql
+SELECT * FROM (
+  SELECT owner, segment_name table_name, bytes/1024/1024/1024 "SIZE (GB)"
+  FROM dba_segments
+  WHERE segment_type = 'TABLE' AND segment_name NOT LIKE 'BIN%'
+  ORDER BY 3 DESC
+) WHERE ROWNUM <= 10;
+```
+
+### MySQL Database Size
+Retrieve database size information:
+```sql
+SELECT table_schema "Database Name", 
+       SUM(data_length + index_length) / 1024 / 1024 "Size (MB)" 
+FROM information_schema.TABLES 
+GROUP BY table_schema;
+```
+
+---
+
+## Automation with Liquibase
+
+### Update Database Schema
+#### For Oracle
+```bash
+java -jar liquibase.jar --logLevel=info \
+  --changeLogFile=com/db/changelog/master_changelog.xml \
+  --driver=oracle.jdbc.OracleDriver \
+  --classpath=jdbc/ojdbc8.jar \
+  --url=jdbc:oracle:thin:@<Host>:<Port>/<Service_Name> \
+  --username=ftacs \
+  --password=ftacs update
+```
+
+#### For MySQL
+```bash
+java -jar liquibase.jar --logLevel=info \
+  --changeLogFile=com/db/changelog/master_changelog.xml \
+  --driver=com.mysql.cj.jdbc.Driver \
+  --classpath=jdbc/mysql-connector-java-8.0.25.jar \
+  --url=jdbc:mysql://localhost/ftacs \
+  --username=ftacs \
+  --password=ftacs update
+```
+
+---
+
+## Notes
+
+- Replace `<Host>`, `<Port>`, `<Service_Name>`, and placeholders like `<SCN_Value>` with the actual values before execution.
+- Always test scripts in a non-production environment to avoid unintended consequences.
+- Ensure necessary permissions are granted to execute backups and restores effectively.
+
