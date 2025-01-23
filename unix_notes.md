@@ -7,7 +7,7 @@ Here is the updated `.md` file containing the requested changes. All specific na
 
 ### Checking .NET Version on Windows
 To check the installed .NET Framework version:
-```bash
+```
 reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\full" /v version
 ```
 
