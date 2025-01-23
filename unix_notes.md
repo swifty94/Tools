@@ -1,3 +1,6 @@
+Here is the updated `.md` file containing the requested changes. All specific names, IPs, directories, and schemas have been replaced with generalized placeholders.
+
+```markdown
 # SYSADMIN NOTES
 
 ## System Administration
@@ -12,12 +15,12 @@ reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\full
 #### Remove SELinux Attributes
 If SELinux is disabled, you can remove attributes with:
 ```bash
-find FTACS -exec setfattr -x security.selinux {} \;
+find folder_name -exec setfattr -x security.selinux {} \;
 ```
 
 #### Optimized for Specific File Systems
 ```bash
-find /var/www/html/ \( -fstype ext2 -o -fstype ext3 -o -fstype ext4 -o -fstype btrfs \) -exec setfattr -x security.selinux {} \;
+find /path/to/files \( -fstype ext2 -o -fstype ext3 -o -fstype ext4 -o -fstype btrfs \) -exec setfattr -x security.selinux {} \;
 ```
 
 ---
@@ -27,11 +30,11 @@ find /var/www/html/ \( -fstype ext2 -o -fstype ext3 -o -fstype ext4 -o -fstype b
 ### Adjust File and Directory Permissions
 #### Set Directory Permissions
 ```bash
-find FTACS -type d -print0 | xargs -0 chmod 0755
+find folder_name -type d -print0 | xargs -0 chmod 0755
 ```
 #### Set File Permissions
 ```bash
-find FTACS -type f -print0 | xargs -0 chmod 0644
+find folder_name -type f -print0 | xargs -0 chmod 0644
 ```
 
 #### Verify Permissions
@@ -46,17 +49,17 @@ stat -c "%a %n" -- *
 ### Gzip Logs Older than 4 Days
 #### Using `find` and `gzip`
 ```bash
-find /FTTH/FTACS5/standalone/log/ -type f -name ".log.????-??-??" -print -exec gzip {} \;
+find /path/to/logs/ -type f -name "*.log.????-??-??" -print -exec gzip {} \;
 ```
 #### Remove Files Older Than 7 Days
 ```bash
-find ~/Desktop/Copy/Documents/ -type f -mtime +7 -exec rm {} \;
+find ~/folder_name/ -type f -mtime +7 -exec rm {} \;
 ```
 
 #### Crontab Automation
 - Add this line to automate the process:
 ```bash
-(crontab -l; echo "0 0 * * * exec find /usr/local/FTACS6/standalone/log/server.log* -type f -mtime +5 -delete") | crontab -
+(crontab -l; echo "0 0 * * * exec find /path/to/logs/server.log* -type f -mtime +5 -delete") | crontab -
 ```
 
 ---
@@ -66,19 +69,19 @@ find ~/Desktop/Copy/Documents/ -type f -mtime +7 -exec rm {} \;
 ### WiFi Diagnostics
 Generate a WiFi scan report:
 ```bash
-sudo iwlist wlp1s0 scan | awk '{ print $1 }' | egrep "(ESSID|Channel|Frequency|Quality)" | \
-sed 's/:/          /g' | sed 's/=         /g' | sed '/ESSID/{G;}' | column -t > ip_scan.csv
+sudo iwlist wlan0 scan | awk '{ print $1 }' | egrep "(ESSID|Channel|Frequency|Quality)" | \
+sed 's/:/          /g' | sed 's/=         /g' | sed '/ESSID/{G;}' | column -t > wifi_scan.csv
 ```
 
-### Check Open ACS Ports
+### Check Open Application Ports
 ```bash
-netstat -an | egrep "(8181|8080|8182|8443)" | grep -v TIME_WAIT | grep -v ESTABLISHED | grep -v unix
+netstat -an | egrep "(port1|port2|port3|port4)" | grep -v TIME_WAIT | grep -v ESTABLISHED | grep -v unix
 ```
 
 ### STUN Checker
 Check STUN server status:
 ```bash
-stun -v demo.friendly-tech.com:3478
+stun -v stun.server.com:3478
 ```
 
 ---
@@ -86,28 +89,28 @@ stun -v demo.friendly-tech.com:3478
 ## Advanced Scripting Examples
 
 ### Process Logs for Specific IDs
-#### Extract Unique CPE IDs
+#### Extract Unique IDs
 ```bash
-egrep 'Cpe [0-9]{0,7}' /usr/local/FTACS5/standalone/log/server.log | awk '{print $7}' | sort -u > cpe_id_list_$HOSTNAME.txt
+egrep 'Device [0-9]{0,7}' /path/to/logs/server.log | awk '{print $7}' | sort -u > device_id_list.txt
 ```
-#### Process Each CPE ID
+#### Process Each Device ID
 ```bash
-for SN in $(cat cpe_id_list_$HOSTNAME.txt); do grep $SN /usr/local/FTACS5/standalone/log/server.log; done
+for id in $(cat device_id_list.txt); do grep $id /path/to/logs/server.log; done
 ```
 
-### Large Oracle Traces Cleanup
+### Large Trace Files Cleanup
 Remove old trace files:
 ```bash
-for i in /u01/app/oracle/diag/crs/acsdb01/crs/trace/*.trc; do find $i -type f -mtime +5 | xargs rm -f; done
+for i in /path/to/trace/files/*.trc; do find $i -type f -mtime +5 | xargs rm -f; done
 ```
 Automate with `crontab`:
 ```bash
-(crontab -l; echo "0 01 * * * exec find /u01/app/oracle/diag/crs/acsdb01/crs/trace/*.trm -type f -mtime +5 -delete") | crontab -
+(crontab -l; echo "0 01 * * * exec find /path/to/trace/files/*.trm -type f -mtime +5 -delete") | crontab -
 ```
 
 ### Binary Logs Purging
 ```bash
-PURGE BINARY LOGS TO 'mysql-bin.001463';
+PURGE BINARY LOGS TO 'log-bin.000001';
 ```
 
 ---
@@ -115,24 +118,24 @@ PURGE BINARY LOGS TO 'mysql-bin.001463';
 ## Process Management
 
 ### Quick Kill Commands
-#### Kill ACS
+#### Kill Application Processes
 ```bash
-for acs in $(ps aux | grep -v grep | grep java | grep Standalone | grep jboss | awk '{print $2}'); do kill -9 $acs; done
+for proc in $(ps aux | grep -v grep | grep process_name | awk '{print $2}'); do kill -9 $proc; done
 ```
 
-#### Kill Hazelcast
+#### Kill Specific Services
 ```bash
-for hz in $(ps aux | grep java | grep hazelcast | awk '{print $2}'); do kill -9 $hz; done
+for service in $(ps aux | grep java | grep service_name | awk '{print $2}'); do kill -9 $service; done
 ```
 
 ### Start Services
-#### Start Hazelcast
+#### Start Service1
 ```bash
-service hazelcast start
+service service_name start
 ```
-#### Start ACS
+#### Start Service2
 ```bash
-service jbossv5 start
+service service_name2 start
 ```
 
 ---
@@ -141,13 +144,13 @@ service jbossv5 start
 
 ### Sorting Directory Sizes
 ```bash
-du $path -ah --max-depth=2 2>/dev/null | sort -rh | head -20
+du /path/to/directory -ah --max-depth=2 2>/dev/null | sort -rh | head -20
 ```
 
 ### Debugging Cron Jobs
 Redirect logs for debugging:
 ```bash
-(crontab -l; echo "0 01 * * * /bin/bash /usr/master_dump.sh > /dev/null 2>&1") | crontab -
+(crontab -l; echo "0 01 * * * /bin/bash /path/to/script.sh > /dev/null 2>&1") | crontab -
 ```
 
 ### CPU Usage Report
@@ -159,37 +162,37 @@ top -bn 1 | head | grep "%Cpu(s)" | awk '{print $1 " " $2}'
 
 # Database Operations Notes
 
-## Oracle Database Operations
+## Database Operations
 
 ### Check Applied Changesets
 Retrieve the IDs of the applied changesets:
 ```sql
-SELECT id FROM ftacs.databasechangelog;
+SELECT id FROM schema_name.databasechangelog;
 ```
 
 ### Connection Strings
-Examples of Oracle SQL Plus connection strings:
+Examples of database connection strings:
 ```bash
 sqlplus user/password@host:port/service
 ```
 
 #### Examples:
 ```bash
-sqlplus ftacs/ftacs@10.0.0.1:1521/TR069DB_SRV_TR069DB_01
-sqlplus ftacs/ftacs@pv10150:1521/ORADIGI
-sqlplus ftacs/UTdoPfw26S5e0Q4@ftacsdb01:1521/ftacs
+sqlplus user/pass@127.0.0.1:1521/service_name
+sqlplus user/pass@db_host:1521/DB_SERVICE
+sqlplus user/password@hostname:1521/service
 ```
 
 ### Backup and Restore with SCN
 #### Backup Using SCN
 1. Create a backup directory:
    ```sql
-   CREATE OR REPLACE DIRECTORY backup AS '/mnt/backup';
+   CREATE OR REPLACE DIRECTORY backup_dir AS '/path/to/backup';
    ```
 
 2. Grant permissions:
    ```sql
-   GRANT READ, WRITE ON DIRECTORY backup TO ftacs;
+   GRANT READ, WRITE ON DIRECTORY backup_dir TO user;
    ```
 
 3. Retrieve the current SCN:
@@ -199,15 +202,15 @@ sqlplus ftacs/UTdoPfw26S5e0Q4@ftacsdb01:1521/ftacs
 
 4. Perform the export:
    ```bash
-   nohup expdp ftacs/ftacs directory=FTDPS dumpfile=friendly_schemas_%U.dmp \
-   logfile=friendly_schemas.log schemas=ADMIN,CSR,FTACS exclude=statistics \
+   nohup expdp user/pass directory=backup_dir dumpfile=dump_file_%U.dmp \
+   logfile=export.log schemas=SCHEMA1,SCHEMA2 exclude=statistics \
    parallel=4 FLASHBACK_SCN=$(SCN from step 2) &
    ```
 
 #### Restore Backup
 Import the backup file:
 ```bash
-nohup impdp ftacs/ftacs DUMPFILE=friendly_schemas_%U.dmp schemas=ADMIN,CSR,FTACS parallel=4 &
+nohup impdp user/pass DUMPFILE=dump_file_%U.dmp schemas=SCHEMA1,SCHEMA2 parallel=4 &
 ```
 
 ---
@@ -218,15 +221,15 @@ nohup impdp ftacs/ftacs DUMPFILE=friendly_schemas_%U.dmp schemas=ADMIN,CSR,FTACS
 #### Grant All Privileges
 Grant privileges to a user on a specific host:
 ```sql
-GRANT ALL ON *.* TO 'ftacs'@'10.0.0.2' IDENTIFIED BY 'ftacs';
+GRANT ALL ON *.* TO 'user'@'127.0.0.1' IDENTIFIED BY 'password';
 FLUSH PRIVILEGES;
 ```
 
 ### Backup and Restore
 #### Create a Backup
 ```bash
-mysqldump -u ftacs -p'ftacs' -h 10.0.0.3 --single-transaction --triggers --routines --events \
---databases ftacs admin csr > /path/to/backup.sql
+mysqldump -u user -p'password' -h 127.0.0.1 --single-transaction --triggers --routines --events \
+--databases schema1 schema2 schema3 > /path/to/backup.sql
 ```
 
 #### Restore a Backup
@@ -238,7 +241,7 @@ mysql -u root -p < /path/to/backup.sql
 
 ## Common Queries
 
-### Top Oracle Tables by Size
+### Top Tables by Size
 Retrieve the top 10 largest tables:
 ```sql
 SELECT * FROM (
@@ -249,7 +252,7 @@ SELECT * FROM (
 ) WHERE ROWNUM <= 10;
 ```
 
-### MySQL Database Size
+### Database Size
 Retrieve database size information:
 ```sql
 SELECT table_schema "Database Name", 
@@ -263,26 +266,26 @@ GROUP BY table_schema;
 ## Automation with Liquibase
 
 ### Update Database Schema
-#### For Oracle
+#### For Database1
 ```bash
 java -jar liquibase.jar --logLevel=info \
   --changeLogFile=com/db/changelog/master_changelog.xml \
   --driver=oracle.jdbc.OracleDriver \
   --classpath=jdbc/ojdbc8.jar \
   --url=jdbc:oracle:thin:@<Host>:<Port>/<Service_Name> \
-  --username=ftacs \
-  --password=ftacs update
+  --username=user \
+  --password=password update
 ```
 
-#### For MySQL
+#### For Database2
 ```bash
 java -jar liquibase.jar --logLevel=info \
   --changeLogFile=com/db/changelog/master_changelog.xml \
   --driver=com.mysql.cj.jdbc.Driver \
   --classpath=jdbc/mysql-connector-java-8.0.25.jar \
-  --url=jdbc:mysql://localhost/ftacs \
-  --username=ftacs \
-  --password=ftacs update
+  --url=jdbc:mysql://127.0.0.1/schema \
+  --username=user \
+  --password=password update
 ```
 
 ---
@@ -292,4 +295,4 @@ java -jar liquibase.jar --logLevel=info \
 - Replace `<Host>`, `<Port>`, `<Service_Name>`, and placeholders like `<SCN_Value>` with the actual values before execution.
 - Always test scripts in a non-production environment to avoid unintended consequences.
 - Ensure necessary permissions are granted to execute backups and restores effectively.
-
+```
