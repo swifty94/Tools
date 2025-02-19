@@ -1,5 +1,3 @@
-Here is the updated `.md` file containing the requested changes. All specific names, IPs, directories, and schemas have been replaced with generalized placeholders.
-
 ```markdown
 # SYSADMIN NOTES
 
